@@ -7,11 +7,11 @@ const firebaseConfig = {
   projectId: "tracker-cee74",
   storageBucket: "tracker-cee74.firebasestorage.app",
   messagingSenderId: "1001477352233",
-  appId: "1:1001477352233:web:740c5f532a76339b7a2538"
+  appId: "1:1001477352233:web:b8047bc9ac54037d7a2538"
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app, "ai-studio-tracker-0153b2da-d0d5-44eb-8698-544643d0168d");
+const db = getFirestore(app);
 
 enableIndexedDbPersistence(db).catch((err) => {
   if (err.code == 'failed-precondition') {
