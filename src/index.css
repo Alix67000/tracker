@@ -10,6 +10,22 @@
   --nav-bg: #ffffff;
   --nav-active: #2563eb;
   --nav-inactive: #64748b;
+  --border: #f1f5f9;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary: #3b82f6;
+    --bg: #0f172a;
+    --card: #1e293b;
+    --text: #f8fafc;
+    --text-muted: #94a3b8;
+    --success: #10b981;
+    --nav-bg: #0f172a;
+    --nav-active: #3b82f6;
+    --nav-inactive: #64748b;
+    --border: #334155;
+  }
 }
 
 * {
@@ -31,9 +47,10 @@ body {
   max-width: 480px;
   margin: 0 auto;
   min-height: 100vh;
-  background-color: #ffffff;
+  background-color: var(--card);
   position: relative;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow-x: hidden;
 }
 
 .layout {
@@ -67,7 +84,7 @@ body {
 
 .card {
   background-color: var(--card);
-  border: 1px solid #f1f5f9; /* slate-100 */
+  border: 1px solid var(--border);
   border-radius: 0.75rem; /* rounded-xl */
   padding: 1rem; /* p-4 */
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -81,7 +98,7 @@ body {
 
 .card p:first-child {
   font-weight: 700; /* font-bold */
-  color: #334155; /* slate-700 */
+  color: var(--text);
   font-size: 0.875rem; /* text-sm */
   margin-bottom: 0.25rem;
 }
@@ -124,7 +141,7 @@ body {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  border-top: 1px solid #f1f5f9; /* slate-100 */
+  border-top: 1px solid var(--border);
   z-index: 100;
   padding: 0 1rem 0.5rem 1rem;
 }
@@ -158,8 +175,64 @@ body {
   transform: scale(1.1);
 }
 
+/* Spinner */
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--text);
+  color: var(--card);
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.875rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  animation: slideUp 0.3s ease-out, fadeOut 0.3s ease-in 2s forwards;
+  pointer-events: none;
+}
+
 /* Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translate(-50%, 20px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes checkBounce {
+  0% { transform: scale(0.8); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.check-animate {
+  animation: checkBounce 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.fade-in-transition {
+  animation: fadeIn 0.3s ease-in-out;
 }
