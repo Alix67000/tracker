@@ -1,17 +1,19 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
+import firebaseConfig from "../firebase-applet-config.json";
 
-const firebaseConfig = {
-  apiKey: "PLACEHOLDER_API_KEY",
-  authDomain: "PLACEHOLDER_AUTH_DOMAIN",
-  projectId: "PLACEHOLDER_PROJECT_ID",
-  storageBucket: "PLACEHOLDER_STORAGE_BUCKET",
-  messagingSenderId: "PLACEHOLDER_MESSAGING_SENDER_ID",
-  appId: "PLACEHOLDER_APP_ID"
-};
+// REMPLACER par vos clés si vous déployez hors de ce projet
+// const firebaseConfig = {
+//   apiKey: "VOTRE_API_KEY",
+//   authDomain: "VOTRE_AUTH_DOMAIN",
+//   projectId: "VOTRE_PROJECT_ID",
+//   storageBucket: "VOTRE_STORAGE_BUCKET",
+//   messagingSenderId: "VOTRE_MESSAGING_SENDER_ID",
+//   appId: "VOTRE_APP_ID"
+// };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 
 enableIndexedDbPersistence(db).catch((err) => {
   if (err.code == 'failed-precondition') {
