@@ -1,8 +1,15 @@
 import { useState, useMemo } from 'react';
 import { useApp } from '../contexts/AppContext';
 import { getTodayISO, getDayOfWeek, getWeekStart, addDays } from '../utils/date';
-import StatCard from '../components/StatCard';
-import MiniChart from '../components/MiniChart';
+
+const WORKOUT_COLORS: Record<string, { color: string; emoji: string }> = {
+  blue: { color: 'var(--accent-blue)', emoji: '🏃' },
+  red: { color: 'var(--accent-red)', emoji: '◆' },
+  green: { color: 'var(--accent-green)', emoji: '○' },
+  amber: { color: 'var(--accent-amber)', emoji: '◇' },
+  orange: { color: 'var(--accent-amber)', emoji: '◇' }, // Fallback for existing data
+  purple: { color: 'var(--accent-purple)', emoji: '🧘' }, // Fallback for existing data
+};
 
 export default function StatsPage() {
   const { workouts, completions } = useApp();
@@ -121,52 +128,141 @@ export default function StatsPage() {
     };
   }, [workouts, completions, period]);
 
+  const maxCount = Math.max(...stats.chartData.map(d => d.count), 1);
+  const barWidth = 28;
+  const gap = (300 - 7 * barWidth) / 6;
+
   return (
-    <div className="page pb-8">
-      <header className="mb-6">
-        <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">
+    <div className="page pb-24" style={{ animation: 'fadeIn 0.2s ease-out' }}>
+      <header className="mb-6 pt-4">
+        <h1 className="text-2xl font-bold m-0" style={{ fontFamily: 'var(--font-display)', color: 'var(--text)' }}>
           Statistiques
         </h1>
-        <p className="text-slate-400 text-sm">Suivez votre progression</p>
       </header>
       
-      <div className="flex bg-slate-200 p-1 rounded-xl mb-6">
-        <button onClick={() => setPeriod('week')} className={`flex-1 py-1.5 text-sm font-bold rounded-lg transition-colors ${period === 'week' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'}`}>Semaine</button>
-        <button onClick={() => setPeriod('month')} className={`flex-1 py-1.5 text-sm font-bold rounded-lg transition-colors ${period === 'month' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'}`}>Mois</button>
-        <button onClick={() => setPeriod('all')} className={`flex-1 py-1.5 text-sm font-bold rounded-lg transition-colors ${period === 'all' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'}`}>Tout</button>
+      <div className="surface flex gap-1 p-1 rounded-[14px] mb-6">
+        {['week', 'month', 'all'].map(p => (
+          <button
+            key={p}
+            onClick={() => setPeriod(p as any)}
+            className="flex-1 rounded-[12px] py-2.5 text-sm font-semibold transition-all duration-200"
+            style={{
+              fontFamily: 'var(--font-display)',
+              backgroundColor: period === p ? 'var(--surface-raised)' : 'transparent',
+              color: period === p ? 'var(--text)' : 'var(--text-muted)',
+              boxShadow: period === p ? '0 1px 4px rgba(0,0,0,0.4)' : 'none'
+            }}
+          >
+            {p === 'week' ? 'Semaine' : p === 'month' ? 'Mois' : 'Tout'}
+          </button>
+        ))}
       </div>
       
       <div className="grid grid-cols-2 gap-3 mb-6">
-        <div className="col-span-2">
-           <StatCard label="Série actuelle" value={stats.streak} unit="jours" icon="🔥" />
+        <div className="surface col-span-2 flex flex-col items-center justify-center pt-6 pb-6">
+          <div className="text-2xl mb-2">🔥</div>
+          <div className="text-4xl font-bold mb-1" style={{ fontFamily: 'var(--font-display)', color: 'var(--text)' }}>
+            {stats.streak}
+          </div>
+          <div className="label-dark">jours consécutifs</div>
         </div>
-        <StatCard label="Complétés" value={`${stats.completedCount} / ${stats.plannedCount}`} icon="🎯" />
-        <StatCard label="Taux de réussite" value={stats.rate} unit="%" icon="📈" />
+        
+        <div className="surface flex flex-col items-center justify-center pt-6 pb-6">
+          <div className="text-xl mb-2">🎯</div>
+          <div className="text-2xl font-bold mb-1" style={{ fontFamily: 'var(--font-display)', color: 'var(--text)' }}>
+            {stats.completedCount} / {stats.plannedCount}
+          </div>
+          <div className="label-dark">SÉANCES</div>
+        </div>
+        
+        <div className="surface flex flex-col items-center justify-center pt-6 pb-6">
+          <div className="text-xl mb-2">📈</div>
+          <div className="text-2xl font-bold mb-1" style={{ fontFamily: 'var(--font-display)', color: stats.rate === 100 ? 'var(--accent-green)' : 'var(--text)' }}>
+            {stats.rate}%
+          </div>
+          <div className="label-dark">RÉUSSITE</div>
+        </div>
       </div>
 
-      <div className="mb-6">
-        <MiniChart data={stats.chartData} />
+      <div className="surface mb-6">
+        <div className="label-dark mb-4">7 derniers jours</div>
+        <svg width="100%" height="120px" viewBox="0 0 300 120">
+          {stats.chartData.map((d, i) => {
+            const x = i * (barWidth + gap);
+            const h = (d.count / maxCount) * 90;
+            const y = 90 - h;
+            const isToday = i === 6;
+            return (
+              <g key={i}>
+                <rect x={x} y={0} width={barWidth} height={90} rx={6} fill="var(--surface-raised)" />
+                {d.count > 0 && (
+                  <rect 
+                    x={x} y={y} width={barWidth} height={h} rx={6} fill="var(--accent-blue)"
+                    style={{ opacity: isToday ? 1 : 0.7, transition: 'all 0.5s ease' }}
+                  />
+                )}
+                <text 
+                  x={x + barWidth / 2} 
+                  y={110} 
+                  textAnchor="middle" 
+                  style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 600, fill: 'var(--text-muted)' }}
+                >
+                  {d.day}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
       </div>
 
       <div>
-        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Détail par entraînement</h3>
-        <div className="space-y-3">
-           {stats.workoutsStats.map(ws => (
-             <div key={ws.id} className="bg-white border border-slate-100 rounded-xl p-4 shadow-sm fade-in-transition">
-               <div className="flex justify-between items-end mb-2">
-                 <h4 className="font-bold text-slate-700 text-sm">{ws.name}</h4>
-                 <span className="text-xs font-bold text-slate-400">{ws.rate}% ({ws.completed}/{ws.planned})</span>
-               </div>
-               <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                 <div className="bg-blue-600 h-full transition-all duration-500" style={{ width: `${ws.rate}%` }}></div>
-               </div>
+        <h3 className="text-lg font-bold mt-6 mb-4" style={{ fontFamily: 'var(--font-display)', color: 'var(--text)' }}>
+          Par programme
+        </h3>
+        <div className="flex flex-col gap-3">
+          {stats.workoutsStats.length > 0 ? (
+             stats.workoutsStats.map((ws: any) => {
+               const theme = WORKOUT_COLORS[ws.color] || WORKOUT_COLORS.blue;
+               return (
+                 <div key={ws.id} className="surface flex items-center p-5">
+                   <div 
+                     className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                     style={{ backgroundColor: `color-mix(in srgb, ${theme.color} 10%, transparent)`, color: theme.color }}
+                   >
+                     {theme.emoji}
+                   </div>
+                   
+                   <div className="flex-1 ml-3 mr-4">
+                     <div className="text-sm font-semibold mb-1" style={{ fontFamily: 'var(--font-display)', color: 'var(--text)' }}>
+                       {ws.name}
+                     </div>
+                     <div className="w-full h-1.5 rounded-full" style={{ backgroundColor: 'var(--surface-raised)' }}>
+                       <div 
+                         className="h-1.5 rounded-full transition-all duration-500" 
+                         style={{ backgroundColor: theme.color, width: `${ws.rate}%` }}
+                       ></div>
+                     </div>
+                   </div>
+                   
+                   <div className="flex flex-col items-end shrink-0">
+                     <div className="text-sm font-bold" style={{ fontFamily: 'var(--font-display)', color: ws.rate === 100 ? 'var(--accent-green)' : theme.color }}>
+                       {ws.rate}%
+                     </div>
+                     <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                       {ws.completed}/{ws.planned}
+                     </div>
+                   </div>
+                 </div>
+               )
+             })
+          ) : (
+             <div className="surface text-center py-6">
+               <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Aucune donnée à afficher</span>
              </div>
-           ))}
-           {stats.workoutsStats.length === 0 && (
-             <p className="text-slate-400 text-sm text-center py-4">Aucune donnée.</p>
-           )}
+          )}
         </div>
       </div>
     </div>
   );
 }
+
