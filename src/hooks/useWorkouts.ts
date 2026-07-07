@@ -10,18 +10,18 @@ export interface WorkoutData {
 }
 
 export function useWorkouts() {
-  const { workouts, deviceId } = useApp();
+  const { workouts } = useApp();
 
   const addWorkout = async (data: WorkoutData) => {
     try {
       const workoutsRef = collection(db, 'workouts');
       await addDoc(workoutsRef, {
         ...data,
-        deviceId,
         createdAt: new Date().toISOString()
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding workout:', error);
+      alert('Erreur: ' + error.message);
     }
   };
 
@@ -29,23 +29,21 @@ export function useWorkouts() {
     try {
       const workoutRef = doc(db, 'workouts', id);
       await updateDoc(workoutRef, data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating workout:', error);
+      alert('Erreur: ' + error.message);
     }
   };
 
   const deleteWorkout = async (id: string) => {
     try {
-      // 1. Delete the workout document
       const workoutRef = doc(db, 'workouts', id);
       await deleteDoc(workoutRef);
 
-      // 2. Query and delete all completions associated with this workout
       const completionsRef = collection(db, 'completions');
       const q = query(
         completionsRef, 
-        where('workoutId', '==', id), 
-        where('deviceId', '==', deviceId)
+        where('workoutId', '==', id)
       );
       
       const snapshot = await getDocs(q);
@@ -56,8 +54,9 @@ export function useWorkouts() {
         });
         await batch.commit();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting workout:', error);
+      alert('Erreur: ' + error.message);
     }
   };
 

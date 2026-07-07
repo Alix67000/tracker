@@ -3,7 +3,7 @@ import { db } from '../firebase';
 import { useApp } from '../contexts/AppContext';
 
 export function useCompletions() {
-  const { completions, deviceId } = useApp();
+  const { completions } = useApp();
 
   const toggleCompletion = async (workoutId: string, date: string, currentCompleted: boolean) => {
     try {
@@ -11,8 +11,7 @@ export function useCompletions() {
       const q = query(
         completionsRef, 
         where('workoutId', '==', workoutId), 
-        where('date', '==', date), 
-        where('deviceId', '==', deviceId)
+        where('date', '==', date)
       );
       
       const snapshot = await getDocs(q);
@@ -23,7 +22,6 @@ export function useCompletions() {
           workoutId,
           date,
           completed: true, // Assuming the toggle intention is from uncompleted to completed
-          deviceId,
           completedAt: new Date().toISOString()
         });
       } else {
@@ -34,8 +32,9 @@ export function useCompletions() {
           completed: !currentCompleted
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error toggling completion:', error);
+      alert('Erreur: ' + error.message);
     }
   };
 

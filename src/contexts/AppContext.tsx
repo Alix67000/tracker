@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { getTodayISO } from '../utils/date';
 
@@ -8,7 +8,7 @@ export interface AppState {
   completions: any[];
   currentDate: string;
   loading: boolean;
-  deviceId: string;
+  error: string | null;
   setCurrentDate: (date: string) => void;
 }
 
@@ -22,52 +22,58 @@ export function useApp() {
   return context;
 }
 
-function getDeviceId() {
-  let id = localStorage.getItem('tracker-device-id');
-  if (!id) {
-    id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
-    localStorage.setItem('tracker-device-id', id);
-  }
-  return id;
-}
-
 export function AppProvider({ children }: { children: ReactNode }) {
   const [workouts, setWorkouts] = useState<any[]>([]);
   const [completions, setCompletions] = useState<any[]>([]);
   const [currentDate, setCurrentDate] = useState(getTodayISO());
   const [loading, setLoading] = useState(true);
-  const [deviceId] = useState(getDeviceId());
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let workoutsLoaded = false;
+    let completionsLoaded = false;
+
+    const checkLoading = () => {
+      if (workoutsLoaded && completionsLoaded) {
+        setLoading(false);
+      }
+    };
+
     // Listen to workouts
     const workoutsRef = collection(db, 'workouts');
-    const qWorkouts = query(workoutsRef, where('deviceId', '==', deviceId));
     
-    const unsubscribeWorkouts = onSnapshot(qWorkouts, (snapshot) => {
+    const unsubscribeWorkouts = onSnapshot(workoutsRef, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setWorkouts(data);
-      setLoading(false);
-    }, (error) => {
-      console.error("Error fetching workouts:", error);
-      setLoading(false);
+      workoutsLoaded = true;
+      checkLoading();
+    }, (err: any) => {
+      console.error("Error fetching workouts:", err);
+      setError(err.message);
+      workoutsLoaded = true;
+      checkLoading();
     });
 
     // Listen to completions
     const completionsRef = collection(db, 'completions');
-    const qCompletions = query(completionsRef, where('deviceId', '==', deviceId));
 
-    const unsubscribeCompletions = onSnapshot(qCompletions, (snapshot) => {
+    const unsubscribeCompletions = onSnapshot(completionsRef, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setCompletions(data);
-    }, (error) => {
-      console.error("Error fetching completions:", error);
+      completionsLoaded = true;
+      checkLoading();
+    }, (err: any) => {
+      console.error("Error fetching completions:", err);
+      setError(err.message);
+      completionsLoaded = true;
+      checkLoading();
     });
 
     return () => {
       unsubscribeWorkouts();
       unsubscribeCompletions();
     };
-  }, [deviceId]);
+  }, []);
 
   return (
     <AppContext.Provider value={{
@@ -75,7 +81,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       completions,
       currentDate,
       loading,
-      deviceId,
+      error,
       setCurrentDate
     }}>
       {children}
