@@ -1,12 +1,12 @@
 import { useState, FormEvent } from 'react';
 import { useWorkouts } from '../hooks/useWorkouts';
-import DaySelector from '../components/DaySelector';
+import { Pencil, Trash2 } from 'lucide-react';
 
 const COLORS = [
-  { id: 'blue', class: 'bg-blue-500' },
-  { id: 'green', class: 'bg-emerald-500' },
-  { id: 'orange', class: 'bg-orange-500' },
-  { id: 'purple', class: 'bg-purple-500' },
+  { id: 'blue', dot: 'bg-blue-500', text: 'text-blue-500', label: 'Cardio' },
+  { id: 'green', dot: 'bg-emerald-500', text: 'text-emerald-500', label: 'Zen' },
+  { id: 'orange', dot: 'bg-orange-500', text: 'text-orange-500', label: 'Force' },
+  { id: 'purple', dot: 'bg-violet-500', text: 'text-violet-500', label: 'Récup' },
 ];
 
 const DAYS = [
@@ -83,7 +83,7 @@ export default function ManagePage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm("Voulez-vous vraiment supprimer cet entraînement ?")) {
+    if (window.confirm("Voulez-vous vraiment supprimer ce programme ?")) {
       await deleteWorkout(id);
       showToast('Supprimé ✓');
       if (editId === id) {
@@ -93,137 +93,193 @@ export default function ManagePage() {
   };
 
   return (
-    <div className="page pb-8 relative">
-      {toast && <div className="toast">{toast}</div>}
-      <header className="mb-6">
-        <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">
-          Entraînements
-        </h1>
-        <p className="text-slate-400 text-sm">Gérez vos habitudes quotidiennes</p>
+    <div className="page pb-20 relative">
+      {/* Toast */}
+      {toast && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+          {toast}
+        </div>
+      )}
+
+      <header className="px-4 py-4">
+        <h1 className="text-xl font-bold text-slate-900">Programmes</h1>
+        <p className="text-sm text-slate-500">Gérez vos séances</p>
       </header>
 
-      <div className="card">
-        <h2 className="text-lg font-bold text-slate-700 mb-4">
-          {editId ? 'Modifier' : 'Nouvel entraînement'}
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-              Nom
+      <div className="px-4">
+        <form onSubmit={handleSubmit} className="bg-white rounded-3xl shadow-sm p-5 mb-6">
+          <div className="mb-4">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+              Nom du programme
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex: Course, Yoga..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-              Durée (minutes)
+          <div className="mb-4">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+              Durée
             </label>
-            <input
-              type="number"
-              value={duration}
-              onChange={(e) => setDuration(e.target.value)}
-              placeholder="Ex: 30"
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-              Jours
-            </label>
-            <DaySelector selectedDays={selectedDays} onToggleDay={handleToggleDay} />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-              Couleur
-            </label>
-            <div className="flex gap-3">
-              {COLORS.map(c => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => setColor(c.id)}
-                  className={`w-8 h-8 rounded-full ${c.class} transition-transform ${color === c.id ? 'ring-2 ring-offset-2 ring-slate-400 scale-110' : 'opacity-50'}`}
-                />
-              ))}
+            <div className="relative">
+              <input
+                type="number"
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+                placeholder="Ex: 30"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">
+                min
+              </span>
             </div>
           </div>
 
-          <div className="pt-2 flex gap-2">
+          <div className="mb-4">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+              Jours
+            </label>
+            <div className="flex gap-2 justify-between">
+              {DAYS.map(day => {
+                const isActive = selectedDays.includes(day.id);
+                return (
+                  <button
+                    key={day.id}
+                    type="button"
+                    onClick={() => handleToggleDay(day.id)}
+                    className={`w-10 h-10 rounded-full text-sm font-bold transition-all ${
+                      isActive 
+                        ? 'bg-blue-500 text-white shadow-md shadow-blue-500/30' 
+                        : 'bg-slate-100 text-slate-500'
+                    }`}
+                  >
+                    {day.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+              Couleur
+            </label>
+            <div className="grid grid-cols-4 gap-3">
+              {COLORS.map(c => {
+                const isActive = color === c.id;
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => setColor(c.id)}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all ${
+                      isActive 
+                        ? `border-current bg-slate-50 ${c.text}` 
+                        : 'bg-white border-slate-100'
+                    }`}
+                  >
+                    <div className={`w-5 h-5 rounded-full ${c.dot}`}></div>
+                    <span className={`text-xs font-semibold ${isActive ? 'text-slate-900' : 'text-slate-500'}`}>
+                      {c.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex gap-2">
             <button
               type="submit"
               disabled={!isValid}
-              className={`flex-1 btn ${!isValid ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`w-full bg-blue-500 text-white rounded-xl py-3 font-bold text-base transition-colors ${
+                !isValid ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'
+              }`}
             >
-              {editId ? 'Modifier' : 'Enregistrer'}
+              {editId ? 'Modifier' : 'Ajouter'}
             </button>
             {editId && (
               <button
                 type="button"
                 onClick={resetForm}
-                className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-lg hover:bg-slate-200 transition-colors"
+                className="px-4 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors"
               >
                 Annuler
               </button>
             )}
           </div>
         </form>
-      </div>
 
-      <div className="mt-8">
-        <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">
-          Vos Entraînements ({workouts.length})
+        <h2 className="text-lg font-bold text-slate-900 mb-3">
+          Vos programmes
         </h2>
-        <div className="space-y-3">
-          {workouts.map(workout => (
-            <div key={workout.id} className="flex items-center p-3 bg-white border border-slate-100 rounded-xl shadow-sm">
-              <div className="flex-1">
-                <p className="font-bold text-slate-700 text-sm">{workout.name}</p>
-                <div className="flex items-center gap-2 mt-1">
-                  {workout.duration && (
-                    <span className="text-slate-400 text-xs">{workout.duration} min</span>
-                  )}
-                  <div className="flex gap-1">
-                    {DAYS.map(day => (
-                      <div 
-                        key={day.id}
-                        className={`w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold
-                          ${workout.daysOfWeek?.includes(day.id) ? 'bg-blue-100 text-blue-600' : 'bg-slate-50 text-slate-300'}
-                        `}
-                      >
-                        {day.label}
-                      </div>
-                    ))}
+        
+        {workouts.length > 0 ? (
+          <div className="flex flex-col gap-3">
+            {workouts.map(workout => {
+              const theme = COLORS.find(c => c.id === workout.color) || COLORS[0];
+              
+              return (
+                <div key={workout.id} className="bg-white rounded-2xl shadow-sm p-4 flex items-center gap-4">
+                  <div className={`w-1 self-stretch rounded-full ${theme.dot}`}></div>
+                  
+                  <div className="w-12 text-center shrink-0">
+                    {workout.duration ? (
+                      <>
+                        <div className="text-xl font-bold text-slate-900">{workout.duration}</div>
+                        <div className="text-xs text-slate-400 uppercase font-semibold">min</div>
+                      </>
+                    ) : (
+                      <div className="text-slate-400 text-xl font-bold">-</div>
+                    )}
+                  </div>
+                  
+                  <div className="flex-1">
+                    <div className="text-sm font-bold text-slate-900">{workout.name}</div>
+                    <div className="flex gap-1 mt-1 flex-wrap">
+                      {DAYS.map(day => {
+                        const isActive = workout.daysOfWeek?.includes(day.id);
+                        return (
+                          <div 
+                            key={day.id}
+                            className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase ${
+                              isActive ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'
+                            }`}
+                          >
+                            {day.label}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2 shrink-0">
+                    <button 
+                      onClick={() => handleEdit(workout)}
+                      className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors"
+                    >
+                      <Pencil size={16} strokeWidth={2.5} />
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(workout.id)}
+                      className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-red-100 hover:text-red-500 transition-colors"
+                    >
+                      <Trash2 size={16} strokeWidth={2.5} />
+                    </button>
                   </div>
                 </div>
-              </div>
-              <div className="flex gap-2 ml-4">
-                <button 
-                  onClick={() => handleEdit(workout)}
-                  className="w-8 h-8 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-slate-100 hover:text-slate-600 transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                </button>
-                <button 
-                  onClick={() => handleDelete(workout.id)}
-                  className="w-8 h-8 rounded-lg bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-100 hover:text-red-600 transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                </button>
-              </div>
-            </div>
-          ))}
-          {workouts.length === 0 && (
-            <p className="text-slate-400 text-sm text-center py-4">Aucun entraînement pour le moment.</p>
-          )}
-        </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="bg-white rounded-3xl p-8 text-center text-slate-400 font-medium">
+            Aucun programme pour le moment.
+          </div>
+        )}
       </div>
     </div>
   );

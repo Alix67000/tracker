@@ -1,28 +1,29 @@
 import { NavLink } from 'react-router-dom';
+import { Home, Dumbbell, BarChart3 } from 'lucide-react';
 
 export default function BottomNav() {
   return (
-    <nav className="bottom-nav">
+    <nav className="fixed bottom-0 w-full max-w-[480px] h-16 bg-white border-t border-slate-100 flex items-center justify-around px-4">
       <NavLink 
         to="/" 
-        className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+        className={({ isActive }) => `flex flex-col items-center gap-1 text-[10px] font-bold uppercase transition-colors ${isActive ? 'text-blue-500' : 'text-slate-400'}`}
       >
-        <span className="nav-icon">🏠</span>
-        <span className="nav-text">Aujourd'hui</span>
+        <Home size={24} strokeWidth={2} />
+        Aujourd'hui
       </NavLink>
       <NavLink 
         to="/manage" 
-        className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+        className={({ isActive }) => `flex flex-col items-center gap-1 text-[10px] font-bold uppercase transition-colors ${isActive ? 'text-blue-500' : 'text-slate-400'}`}
       >
-        <span className="nav-icon">➕</span>
-        <span className="nav-text">Entraînements</span>
+        <Dumbbell size={24} strokeWidth={2} />
+        Programmes
       </NavLink>
       <NavLink 
         to="/stats" 
-        className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+        className={({ isActive }) => `flex flex-col items-center gap-1 text-[10px] font-bold uppercase transition-colors ${isActive ? 'text-blue-500' : 'text-slate-400'}`}
       >
-        <span className="nav-icon">📊</span>
-        <span className="nav-text">Stats</span>
+        <BarChart3 size={24} strokeWidth={2} />
+        Stats
       </NavLink>
     </nav>
   );

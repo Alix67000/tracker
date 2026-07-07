@@ -1,13 +1,12 @@
 import CompletionCheckbox from './CompletionCheckbox';
 import { getDayOfWeek } from '../utils/date';
 
-const WORKOUT_COLORS: Record<string, { color: string; emoji: string }> = {
-  blue: { color: 'var(--accent-blue)', emoji: '🏃' },
-  red: { color: 'var(--accent-red)', emoji: '◆' },
-  green: { color: 'var(--accent-green)', emoji: '○' },
-  amber: { color: 'var(--accent-amber)', emoji: '◇' },
-  orange: { color: 'var(--accent-amber)', emoji: '◇' },
-  purple: { color: 'var(--accent-purple)', emoji: '🧘' },
+const WORKOUT_COLORS: Record<string, { bg: string; text: string; emoji: string }> = {
+  blue: { bg: 'bg-blue-100', text: 'text-blue-600', emoji: '🏃' },
+  green: { bg: 'bg-emerald-100', text: 'text-emerald-600', emoji: '🧘' },
+  orange: { bg: 'bg-orange-100', text: 'text-orange-600', emoji: '💪' },
+  purple: { bg: 'bg-violet-100', text: 'text-violet-600', emoji: '🚴' },
+  red: { bg: 'bg-rose-100', text: 'text-rose-600', emoji: '🔥' },
 };
 
 const DAYS = [
@@ -20,39 +19,29 @@ const DAYS = [
   { id: 0, label: 'D' },
 ];
 
-export default function WorkoutCard({ workout, date, completion, onToggle }: { workout: any; date: string; completion: any; onToggle: () => void }) {
+export default function WorkoutCard({ workout, date, completion, onToggle }: { key?: any; workout: any; date: string; completion: any; onToggle: () => void }) {
   const isCompleted = completion?.completed;
   const currentDay = getDayOfWeek(date);
   const theme = WORKOUT_COLORS[workout.color] || WORKOUT_COLORS.blue;
 
   return (
     <div 
-      className="surface flex items-center p-4 transition-opacity duration-250 ease-in-out"
-      style={{ 
-        opacity: isCompleted ? 0.55 : 1,
-        padding: '1rem',
-      }}
+      className={`bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center p-4 transition-opacity duration-200 ${isCompleted ? 'opacity-55' : 'opacity-100'}`}
     >
       <div 
-        className="w-12 h-12 rounded-full flex items-center justify-center shrink-0"
-        style={{ 
-          backgroundColor: `color-mix(in srgb, ${theme.color} 10%, transparent)`, 
-          color: theme.color,
-          fontSize: '1.25rem'
-        }}
+        className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${theme.bg} ${theme.text} text-xl`}
       >
         {theme.emoji}
       </div>
 
       <div className="flex-1 ml-4 mr-4">
         <h3 
-          className={`text-base font-semibold mb-1 ${isCompleted ? 'line-through' : ''}`}
-          style={{ fontFamily: 'var(--font-display)', color: 'var(--text)' }}
+          className={`text-base font-semibold mb-1 text-slate-900 ${isCompleted ? 'line-through' : ''}`}
         >
           {workout.name}
         </h3>
         {workout.duration && (
-          <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
+          <p className="text-sm mb-3 text-slate-500">
             {workout.duration} min
           </p>
         )}
@@ -61,20 +50,12 @@ export default function WorkoutCard({ workout, date, completion, onToggle }: { w
             const isWorkoutDay = workout.daysOfWeek?.includes(day.id);
             const isActiveDay = day.id === currentDay;
             
-            let tagClass = "program-schedule-tag flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold";
-            if (isActiveDay && isWorkoutDay) {
-              tagClass += " active";
-            }
-            
-            let inlineStyle: any = { margin: 0, padding: 0 };
-            if (!isWorkoutDay) {
-              inlineStyle.color = 'var(--text-muted)';
-              inlineStyle.opacity = 0.3;
-              inlineStyle.backgroundColor = 'transparent';
-            }
+            const baseClass = "flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold";
+            const activeClass = isActiveDay && isWorkoutDay ? `bg-blue-500 text-white` : 'bg-slate-100 text-slate-400';
+            const inactiveClass = !isWorkoutDay ? 'opacity-30' : '';
             
             return (
-              <div key={day.id} className={tagClass} style={inlineStyle}>
+              <div key={day.id} className={`${baseClass} ${activeClass} ${inactiveClass}`}>
                 {day.label}
               </div>
             );

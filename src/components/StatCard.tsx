@@ -7,7 +7,7 @@ interface Props {
 
 export default function StatCard({ label, value, unit, icon }: Props) {
   return (
-    <div className="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-sm fade-in-transition">
+    <div className="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-sm">
       <div className="text-2xl mb-2">{icon}</div>
       <div className="text-2xl font-extrabold text-slate-800">
         {value}

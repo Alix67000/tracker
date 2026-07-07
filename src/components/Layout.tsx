@@ -3,8 +3,8 @@ import BottomNav from './BottomNav';
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <div className="layout">
-      <main className="content">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      <main className="flex-1 px-4 pb-20">
         {children}
       </main>
       <BottomNav />

@@ -7,18 +7,18 @@ interface Props {
   data: DataPoint[];
 }
 
-export default function MiniChart({ data }: Props) {
+export default function MiniChart({ data }: { data: { day: string; count: number }[] }) {
   const maxCount = Math.max(...data.map(d => d.count), 1);
-  const chartHeight = 80; 
-  const barWidth = 24;
+  const chartHeight = 80;
+  const barWidth = 28;
   const svgWidth = 300;
   const gap = (svgWidth - 7 * barWidth) / 6;
 
   return (
-    <div className="w-full bg-white border border-slate-100 rounded-2xl p-5 shadow-sm fade-in-transition">
-      <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 text-center">Activité (7 derniers jours)</h3>
-      <div className="w-full max-w-[300px] mx-auto">
-        <svg viewBox="0 0 300 110" className="w-full h-auto overflow-visible">
+    <div className="bg-white rounded-3xl shadow-sm p-5 mb-6">
+      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">7 derniers jours</h3>
+      <div className="w-full">
+        <svg viewBox="0 0 300 120" className="w-full h-auto overflow-visible">
           {data.map((d, i) => {
             const height = (d.count / maxCount) * chartHeight;
             const y = chartHeight - height;
@@ -26,11 +26,11 @@ export default function MiniChart({ data }: Props) {
             
             return (
               <g key={i}>
-                <rect x={x} y={0} width={barWidth} height={chartHeight} rx={4} fill="#f1f5f9" />
+                <rect x={x} y={0} width={barWidth} height={chartHeight} rx={6} fill="#f1f5f9" />
                 {height > 0 && (
-                  <rect x={x} y={y} width={barWidth} height={height} rx={4} fill="#2563eb" className="transition-all duration-500" />
+                  <rect x={x} y={y} width={barWidth} height={height} rx={6} fill="#3b82f6" />
                 )}
-                <text x={x + barWidth / 2} y={chartHeight + 20} textAnchor="middle" fill="#94a3b8" fontSize="12" fontWeight="bold">
+                <text x={x + barWidth / 2} y={115} textAnchor="middle" fill="#94a3b8" fontSize="11" fontWeight="600">
                   {d.day}
                 </text>
               </g>
