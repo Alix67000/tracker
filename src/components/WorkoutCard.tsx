@@ -40,9 +40,9 @@ export default function WorkoutCard({ workout, date, completion, onToggle }: { k
         >
           {workout.name}
         </h3>
-        {workout.duration && (
+        {workout.repetitions && (
           <p className="text-sm mb-3 text-slate-500">
-            {workout.duration} min
+            {workout.repetitions} fois
           </p>
         )}
         <div className="flex gap-1.5 mt-2">

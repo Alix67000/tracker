@@ -24,7 +24,7 @@ export default function ManagePage() {
   
   const [editId, setEditId] = useState<string | null>(null);
   const [name, setName] = useState('');
-  const [duration, setDuration] = useState('');
+  const [repetitions, setRepetitions] = useState('');
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
   const [color, setColor] = useState(COLORS[0].id);
   const [toast, setToast] = useState<string | null>(null);
@@ -39,7 +39,7 @@ export default function ManagePage() {
   const resetForm = () => {
     setEditId(null);
     setName('');
-    setDuration('');
+    setRepetitions('');
     setSelectedDays([]);
     setColor(COLORS[0].id);
   };
@@ -58,7 +58,7 @@ export default function ManagePage() {
 
     const data = {
       name: name.trim(),
-      duration: duration ? parseInt(duration, 10) : undefined,
+      repetitions: repetitions ? parseInt(repetitions, 10) : undefined,
       daysOfWeek: selectedDays,
       color
     };
@@ -76,7 +76,7 @@ export default function ManagePage() {
   const handleEdit = (workout: any) => {
     setEditId(workout.id);
     setName(workout.name);
-    setDuration(workout.duration ? workout.duration.toString() : '');
+    setRepetitions(workout.repetitions ? workout.repetitions.toString() : '');
     setSelectedDays(workout.daysOfWeek || []);
     setColor(workout.color || COLORS[0].id);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -123,18 +123,18 @@ export default function ManagePage() {
 
           <div className="mb-4">
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-              Durée
+              Répétitions
             </label>
             <div className="relative">
               <input
                 type="number"
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-                placeholder="Ex: 30"
+                value={repetitions}
+                onChange={(e) => setRepetitions(e.target.value)}
+                placeholder="Ex: 10"
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">
-                min
+                fois
               </span>
             </div>
           </div>
@@ -228,10 +228,10 @@ export default function ManagePage() {
                   <div className={`w-1 self-stretch rounded-full ${theme.dot}`}></div>
                   
                   <div className="w-12 text-center shrink-0">
-                    {workout.duration ? (
+                    {workout.repetitions ? (
                       <>
-                        <div className="text-xl font-bold text-slate-900">{workout.duration}</div>
-                        <div className="text-xs text-slate-400 uppercase font-semibold">min</div>
+                        <div className="text-xl font-bold text-slate-900">{workout.repetitions}</div>
+                        <div className="text-xs text-slate-400 uppercase font-semibold">fois</div>
                       </>
                     ) : (
                       <div className="text-slate-400 text-xl font-bold">-</div>

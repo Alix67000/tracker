@@ -4,7 +4,7 @@ import { useApp } from '../contexts/AppContext';
 
 export interface WorkoutData {
   name: string;
-  duration?: number;
+  repetitions?: number;
   daysOfWeek?: number[];
   color?: string;
 }
