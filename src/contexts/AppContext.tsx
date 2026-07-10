@@ -6,6 +6,7 @@ import { getTodayISO } from '../utils/date';
 export interface AppState {
   workouts: any[];
   completions: any[];
+  setCompletions: React.Dispatch<React.SetStateAction<any[]>>;
   currentDate: string;
   loading: boolean;
   error: string | null;
@@ -39,9 +40,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    // Listen to workouts
     const workoutsRef = collection(db, 'workouts');
-    
     const unsubscribeWorkouts = onSnapshot(workoutsRef, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setWorkouts(data);
@@ -54,9 +53,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       checkLoading();
     });
 
-    // Listen to completions
     const completionsRef = collection(db, 'completions');
-
     const unsubscribeCompletions = onSnapshot(completionsRef, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setCompletions(data);
@@ -79,6 +76,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     <AppContext.Provider value={{
       workouts,
       completions,
+      setCompletions,
       currentDate,
       loading,
       error,

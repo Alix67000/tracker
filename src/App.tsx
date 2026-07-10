@@ -1,12 +1,21 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { useState } from 'react';
 import { AppProvider, useApp } from './contexts/AppContext';
 import Layout from './components/Layout';
 import TodayPage from './pages/TodayPage';
 import ManagePage from './pages/ManagePage';
 import StatsPage from './pages/StatsPage';
+import PinScreen from './components/PinScreen';
 
 function AppContent() {
   const { loading, error } = useApp();
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('tracker_authenticated') === 'true';
+  });
+
+  if (!isAuthenticated) {
+    return <PinScreen onSuccess={() => setIsAuthenticated(true)} />;
+  }
 
   if (loading) {
     return (
