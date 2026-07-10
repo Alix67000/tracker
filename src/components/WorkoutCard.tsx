@@ -19,52 +19,48 @@ const DAYS = [
   { id: 0, label: 'D' },
 ];
 
-export default function WorkoutCard({ workout, date, count, onIncrement, onDecrement, onReset }: { 
-  key?: any; 
-  workout: any; 
-  date: string; 
-  count: number; 
-  onIncrement: () => void; 
+interface Props {
+  workout: any;
+  date: string;
+  count: number;
+  onIncrement: () => void;
   onDecrement: () => void;
   onReset: () => void;
-}) {
-  const isStarted = count > 0;
-  const isCompleted = workout.repetitions && count >= workout.repetitions;
+}
+
+export default function WorkoutCard({ workout, date, count, onIncrement, onDecrement, onReset }: Props) {
   const currentDay = getDayOfWeek(date);
   const theme = WORKOUT_COLORS[workout.color] || WORKOUT_COLORS.blue;
+  const target = workout.repetitions || 1;
+  const isComplete = count >= target;
 
   return (
-    <div 
-      className={`bg-white rounded-2xl shadow-sm border ${isCompleted ? 'border-emerald-200' : isStarted ? 'border-blue-200' : 'border-slate-100'} flex items-center p-4 transition-all duration-200`}
-    >
-      <div 
-        className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${theme.bg} ${theme.text} text-xl transition-all duration-200`}
-      >
+    <div className={`bg-white rounded-2xl shadow-sm p-4 mb-3 flex items-center gap-4 transition-all ${isComplete ? 'ring-2 ring-emerald-100' : ''}`}>
+      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0 ${theme.bg} ${theme.text}`}>
         {theme.emoji}
       </div>
 
-      <div className="flex-1 ml-4 mr-4">
-        <h3 
-          className={`text-base font-semibold mb-1 ${isCompleted ? 'text-emerald-700' : 'text-slate-900'} transition-colors duration-200`}
-        >
+      <div className="flex-1 min-w-0">
+        <h3 className={`text-base font-bold truncate ${isComplete ? 'text-emerald-600' : 'text-slate-900'}`}>
           {workout.name}
         </h3>
         {workout.repetitions && (
-          <p className="text-sm mb-3 text-slate-500">
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
             Objectif : {workout.repetitions} fois
           </p>
         )}
-        <div className="flex gap-1.5 mt-2">
+        <div className="flex gap-1 mt-1.5">
           {DAYS.map(day => {
             const isWorkoutDay = workout.daysOfWeek?.includes(day.id);
-            const isActiveDay = day.id === currentDay;
-            
-            const baseClass = "flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold transition-all duration-200";
-            const activeClass = isActiveDay && isWorkoutDay ? `bg-blue-500 text-white` : 'bg-slate-100 text-slate-400';
-            const inactiveClass = !isWorkoutDay ? 'opacity-30' : '';
+            const isToday = day.id === currentDay;
             
             return (
-              <div key={day.id} className={`${baseClass} ${activeClass} ${inactiveClass}`}>
+              <div 
+                key={day.id} 
+                className={`flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold transition-all ${
+                  isWorkoutDay && isToday ? 'bg-blue-500 text-white' : isWorkoutDay ? 'bg-slate-100 text-slate-500' : 'text-slate-200'
+                }`}
+              >
                 {day.label}
               </div>
             );
@@ -75,6 +71,7 @@ export default function WorkoutCard({ workout, date, count, onIncrement, onDecre
       <div className="shrink-0">
         <CompletionCounter 
           count={count} 
+          target={target}
           onIncrement={onIncrement}
           onDecrement={onDecrement}
           onReset={onReset}

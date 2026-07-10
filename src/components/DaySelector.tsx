@@ -4,18 +4,18 @@ interface Props {
 }
 
 const DAYS = [
-  { id: 1, label: 'L' },
-  { id: 2, label: 'M' },
-  { id: 3, label: 'M' },
-  { id: 4, label: 'J' },
-  { id: 5, label: 'V' },
-  { id: 6, label: 'S' },
-  { id: 0, label: 'D' },
+  { id: 1, label: 'Lun' },
+  { id: 2, label: 'Mar' },
+  { id: 3, label: 'Mer' },
+  { id: 4, label: 'Jeu' },
+  { id: 5, label: 'Ven' },
+  { id: 6, label: 'Sam' },
+  { id: 0, label: 'Dim' },
 ];
 
 export default function DaySelector({ selectedDays, onToggleDay }: Props) {
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-1 bg-slate-100 rounded-xl p-1 border border-slate-100">
       {DAYS.map((day) => {
         const isSelected = selectedDays.includes(day.id);
         return (
@@ -23,9 +23,11 @@ export default function DaySelector({ selectedDays, onToggleDay }: Props) {
             key={day.id}
             type="button"
             onClick={() => onToggleDay(day.id)}
-            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors
-              ${isSelected ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400'}
-            `}
+            className={`flex-1 py-1 text-sm transition-colors ${
+              isSelected 
+                ? 'bg-white text-blue-500 font-bold shadow-sm rounded-lg' 
+                : 'text-slate-400 hover:text-slate-600 bg-transparent rounded-lg font-medium'
+            }`}
           >
             {day.label}
           </button>
