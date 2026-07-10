@@ -14,7 +14,7 @@ export default defineConfig(() => {
         manifest: {
           name: 'Tracker',
           short_name: 'Tracker',
-          theme_color: '#2196F3',
+          theme_color: '#0F1115',
           icons: [
             {
               src: '/icon.svg',
