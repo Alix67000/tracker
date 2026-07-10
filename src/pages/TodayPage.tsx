@@ -5,22 +5,24 @@ import WorkoutCard from '../components/WorkoutCard';
 
 export default function TodayPage() {
   const { currentDate, setCurrentDate, workouts, loading } = useApp();
-  const { toggleCompletion, getCompletionsForDate } = useCompletions();
+  const { incrementCompletion, decrementCompletion, resetCompletion, getCompletionCount } = useCompletions();
 
   const handlePrevDay = () => setCurrentDate(addDays(currentDate, -1));
   const handleNextDay = () => setCurrentDate(addDays(currentDate, 1));
 
   const currentDay = getDayOfWeek(currentDate);
-  const completionsToday = getCompletionsForDate(currentDate);
   const todaysWorkouts = workouts.filter(w => w.daysOfWeek && w.daysOfWeek.includes(currentDay));
 
-  const completedCount = todaysWorkouts.filter(workout => {
-    const completion = completionsToday.find(c => c.workoutId === workout.id);
-    return !!completion?.completed;
-  }).length;
+  let completedCount = 0;
+  let totalCount = 0;
 
-  const totalCount = todaysWorkouts.length;
-  const completionPercentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+  todaysWorkouts.forEach(workout => {
+    const count = getCompletionCount(workout.id, currentDate);
+    completedCount += count;
+    totalCount += workout.repetitions || 1;
+  });
+
+  const completionPercentage = totalCount > 0 ? Math.min((completedCount / totalCount) * 100, 100) : 0;
 
   // SVG Gauge calculations
   const radius = 58;
@@ -44,7 +46,7 @@ export default function TodayPage() {
             {formatDateDisplay(currentDate)}
           </h1>
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-0.5">
-            {completedCount}/{totalCount} SÉANCES
+            {completedCount}/{totalCount} RÉPÉTITIONS
           </p>
         </div>
         
@@ -63,7 +65,7 @@ export default function TodayPage() {
           <div className="flex items-center justify-center py-20">
             <div className="w-8 h-8 border-4 border-slate-200 border-t-blue-500 rounded-full animate-spin"></div>
           </div>
-        ) : totalCount > 0 ? (
+        ) : todaysWorkouts.length > 0 ? (
           <>
             {/* HERO PROGRESS GAUGE */}
             <div className="flex justify-center py-4">
@@ -106,14 +108,16 @@ export default function TodayPage() {
             {/* LIST OF WORKOUTS */}
             <div className="flex flex-col gap-3">
               {todaysWorkouts.map(workout => {
-                const completion = completionsToday.find(c => c.workoutId === workout.id);
+                const count = getCompletionCount(workout.id, currentDate);
                 return (
                   <WorkoutCard 
                     key={workout.id}
                     workout={workout}
                     date={currentDate}
-                    completion={completion}
-                    onToggle={() => toggleCompletion(workout.id, currentDate, !!completion?.completed)}
+                    count={count}
+                    onIncrement={() => incrementCompletion(workout.id, currentDate)}
+                    onDecrement={() => decrementCompletion(workout.id, currentDate)}
+                    onReset={() => resetCompletion(workout.id, currentDate)}
                   />
                 );
               })}

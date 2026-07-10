@@ -1,11 +1,11 @@
-import { collection, addDoc, updateDoc, doc, query, where, getDocs } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useApp } from '../contexts/AppContext';
 
 export function useCompletions() {
   const { completions } = useApp();
 
-  const toggleCompletion = async (workoutId: string, date: string, currentCompleted: boolean) => {
+  const incrementCompletion = async (workoutId: string, date: string) => {
     try {
       const completionsRef = collection(db, 'completions');
       const q = query(
@@ -13,34 +13,86 @@ export function useCompletions() {
         where('workoutId', '==', workoutId), 
         where('date', '==', date)
       );
-      
       const snapshot = await getDocs(q);
 
       if (snapshot.empty) {
-        // Create new completion record
         await addDoc(completionsRef, {
           workoutId,
           date,
-          completed: true, // Assuming the toggle intention is from uncompleted to completed
-          completedAt: new Date().toISOString()
+          count: 1,
+          updatedAt: new Date().toISOString()
         });
       } else {
-        // Update existing completion record
         const completionDoc = snapshot.docs[0];
         const docRef = doc(db, 'completions', completionDoc.id);
+        const data = completionDoc.data();
         await updateDoc(docRef, {
-          completed: !currentCompleted
+          count: (data.count || 0) + 1,
+          updatedAt: new Date().toISOString()
         });
       }
     } catch (error: any) {
-      console.error('Error toggling completion:', error);
+      console.error('Error incrementing completion:', error);
       alert('Erreur: ' + error.message);
     }
   };
 
-  const getCompletionsForDate = (date: string) => {
-    return completions.filter(c => c.date === date);
+  const decrementCompletion = async (workoutId: string, date: string) => {
+    try {
+      const completionsRef = collection(db, 'completions');
+      const q = query(
+        completionsRef, 
+        where('workoutId', '==', workoutId), 
+        where('date', '==', date)
+      );
+      const snapshot = await getDocs(q);
+
+      if (!snapshot.empty) {
+        const completionDoc = snapshot.docs[0];
+        const docRef = doc(db, 'completions', completionDoc.id);
+        const data = completionDoc.data();
+        const newCount = Math.max(0, (data.count || 0) - 1);
+        
+        if (newCount === 0) {
+          await deleteDoc(docRef);
+        } else {
+          await updateDoc(docRef, {
+            count: newCount,
+            updatedAt: new Date().toISOString()
+          });
+        }
+      }
+    } catch (error: any) {
+      console.error('Error decrementing completion:', error);
+      alert('Erreur: ' + error.message);
+    }
   };
 
-  return { toggleCompletion, getCompletionsForDate };
+  const resetCompletion = async (workoutId: string, date: string) => {
+    try {
+      const completionsRef = collection(db, 'completions');
+      const q = query(
+        completionsRef, 
+        where('workoutId', '==', workoutId), 
+        where('date', '==', date)
+      );
+      const snapshot = await getDocs(q);
+
+      if (!snapshot.empty) {
+        const completionDoc = snapshot.docs[0];
+        const docRef = doc(db, 'completions', completionDoc.id);
+        await deleteDoc(docRef);
+      }
+    } catch (error: any) {
+      console.error('Error resetting completion:', error);
+      alert('Erreur: ' + error.message);
+    }
+  };
+
+  const getCompletionCount = (workoutId: string, date: string): number => {
+    const comp = completions.find(c => c.workoutId === workoutId && c.date === date);
+    return comp?.count || 0;
+  };
+
+  return { incrementCompletion, decrementCompletion, resetCompletion, getCompletionCount };
 }

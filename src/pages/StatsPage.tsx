@@ -21,13 +21,13 @@ export default function StatsPage() {
     // 1. Streak
     let streak = 0;
     let tempDate = today;
-    const hasCompletionsToday = completions.some(c => c.date === tempDate && c.completed);
+    const hasCompletionsToday = completions.some(c => c.date === tempDate && (c.count || 0) > 0);
     if (!hasCompletionsToday) {
       tempDate = addDays(tempDate, -1);
     }
     let maxLoops = 3650;
     while(maxLoops > 0) {
-      const hasC = completions.some(c => c.date === tempDate && c.completed);
+      const hasC = completions.some(c => c.date === tempDate && (c.count || 0) > 0);
       if (hasC) {
         streak++;
         tempDate = addDays(tempDate, -1);
@@ -71,16 +71,18 @@ export default function StatsPage() {
       workouts.forEach(w => {
         const wDate = w.createdAt ? w.createdAt.split('T')[0] : '2020-01-01';
         if (wDate <= d && w.daysOfWeek?.includes(dayOfWeek)) {
-          plannedCount++;
+          plannedCount += (w.repetitions || 1);
         }
       });
-      const comps = completions.filter(c => c.date === d && c.completed);
-      completedCount += comps.length;
+      const comps = completions.filter(c => c.date === d && (c.count || 0) > 0);
+      comps.forEach(c => {
+        completedCount += (c.count || 0);
+      });
       d = addDays(d, 1);
       loopMax--;
     }
 
-    const rate = plannedCount > 0 ? Math.round((completedCount / plannedCount) * 100) : 0;
+    const rate = plannedCount > 0 ? Math.min(Math.round((completedCount / plannedCount) * 100), 100) : 0;
 
     // 4. MiniChart
     const chartData = [];
@@ -88,8 +90,12 @@ export default function StatsPage() {
     for (let i = 6; i >= 0; i--) {
       const cd = addDays(today, -i);
       const dw = getDayOfWeek(cd);
-      const c = completions.filter(comp => comp.date === cd && comp.completed).length;
-      chartData.push({ day: dayLabels[dw], count: c });
+      const cList = completions.filter(comp => comp.date === cd && (comp.count || 0) > 0);
+      let dayTotal = 0;
+      cList.forEach(c => {
+        dayTotal += (c.count || 0);
+      });
+      chartData.push({ day: dayLabels[dw], count: dayTotal });
     }
 
     // 5. Workouts Stats
@@ -106,15 +112,15 @@ export default function StatsPage() {
       while(pd <= today && subLoop > 0) {
         const dw = getDayOfWeek(pd);
         if (w.daysOfWeek?.includes(dw)) {
-          wPlanned++;
-          const hasC = completions.some(c => c.workoutId === w.id && c.date === pd && c.completed);
-          if (hasC) wCompleted++;
+          wPlanned += (w.repetitions || 1);
+          const c = completions.find(c => c.workoutId === w.id && c.date === pd);
+          if (c) wCompleted += (c.count || 0);
         }
         pd = addDays(pd, 1);
         subLoop--;
       }
       
-      const wRate = wPlanned > 0 ? Math.round((wCompleted / wPlanned) * 100) : 0;
+      const wRate = wPlanned > 0 ? Math.min(Math.round((wCompleted / wPlanned) * 100), 100) : 0;
       return { ...w, planned: wPlanned, completed: wCompleted, rate: wRate };
     });
 
@@ -159,7 +165,7 @@ export default function StatsPage() {
           <div className="bg-white rounded-2xl shadow-sm p-4 text-center">
             <div className="text-2xl mb-1">🎯</div>
             <div className="text-2xl font-bold text-slate-900">{stats.completedCount}/{stats.plannedCount}</div>
-            <div className="text-xs font-bold uppercase tracking-wider text-slate-400">SÉANCES</div>
+            <div className="text-xs font-bold uppercase tracking-wider text-slate-400">RÉPÉTITIONS</div>
           </div>
           
           <div className="bg-white rounded-2xl shadow-sm p-4 text-center">

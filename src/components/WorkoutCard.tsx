@@ -1,4 +1,4 @@
-import CompletionCheckbox from './CompletionCheckbox';
+import CompletionCounter from './CompletionCounter';
 import { getDayOfWeek } from '../utils/date';
 
 const WORKOUT_COLORS: Record<string, { bg: string; text: string; emoji: string }> = {
@@ -19,30 +19,39 @@ const DAYS = [
   { id: 0, label: 'D' },
 ];
 
-export default function WorkoutCard({ workout, date, completion, onToggle }: { key?: any; workout: any; date: string; completion: any; onToggle: () => void }) {
-  const isCompleted = completion?.completed;
+export default function WorkoutCard({ workout, date, count, onIncrement, onDecrement, onReset }: { 
+  key?: any; 
+  workout: any; 
+  date: string; 
+  count: number; 
+  onIncrement: () => void; 
+  onDecrement: () => void;
+  onReset: () => void;
+}) {
+  const isStarted = count > 0;
+  const isCompleted = workout.repetitions && count >= workout.repetitions;
   const currentDay = getDayOfWeek(date);
   const theme = WORKOUT_COLORS[workout.color] || WORKOUT_COLORS.blue;
 
   return (
     <div 
-      className={`bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center p-4 transition-opacity duration-200 ${isCompleted ? 'opacity-55' : 'opacity-100'}`}
+      className={`bg-white rounded-2xl shadow-sm border ${isCompleted ? 'border-emerald-200' : isStarted ? 'border-blue-200' : 'border-slate-100'} flex items-center p-4 transition-all duration-200`}
     >
       <div 
-        className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${theme.bg} ${theme.text} text-xl`}
+        className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${theme.bg} ${theme.text} text-xl transition-all duration-200`}
       >
         {theme.emoji}
       </div>
 
       <div className="flex-1 ml-4 mr-4">
         <h3 
-          className={`text-base font-semibold mb-1 text-slate-900 ${isCompleted ? 'line-through' : ''}`}
+          className={`text-base font-semibold mb-1 ${isCompleted ? 'text-emerald-700' : 'text-slate-900'} transition-colors duration-200`}
         >
           {workout.name}
         </h3>
         {workout.repetitions && (
           <p className="text-sm mb-3 text-slate-500">
-            {workout.repetitions} fois
+            Objectif : {workout.repetitions} fois
           </p>
         )}
         <div className="flex gap-1.5 mt-2">
@@ -50,7 +59,7 @@ export default function WorkoutCard({ workout, date, completion, onToggle }: { k
             const isWorkoutDay = workout.daysOfWeek?.includes(day.id);
             const isActiveDay = day.id === currentDay;
             
-            const baseClass = "flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold";
+            const baseClass = "flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold transition-all duration-200";
             const activeClass = isActiveDay && isWorkoutDay ? `bg-blue-500 text-white` : 'bg-slate-100 text-slate-400';
             const inactiveClass = !isWorkoutDay ? 'opacity-30' : '';
             
@@ -64,7 +73,12 @@ export default function WorkoutCard({ workout, date, completion, onToggle }: { k
       </div>
 
       <div className="shrink-0">
-        <CompletionCheckbox checked={!!isCompleted} onChange={onToggle} />
+        <CompletionCounter 
+          count={count} 
+          onIncrement={onIncrement}
+          onDecrement={onDecrement}
+          onReset={onReset}
+        />
       </div>
     </div>
   );
