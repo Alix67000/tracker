@@ -1,5 +1,4 @@
 import CompletionCounter from './CompletionCounter';
-import { getDayOfWeek } from '../utils/date';
 
 const WORKOUT_COLORS: Record<string, { bg: string; text: string; emoji: string }> = {
   blue: { bg: 'bg-blue-100', text: 'text-blue-600', emoji: '🏃' },
@@ -8,16 +7,6 @@ const WORKOUT_COLORS: Record<string, { bg: string; text: string; emoji: string }
   purple: { bg: 'bg-violet-100', text: 'text-violet-600', emoji: '🚴' },
   red: { bg: 'bg-rose-100', text: 'text-rose-600', emoji: '🔥' },
 };
-
-const DAYS = [
-  { id: 1, label: 'L' },
-  { id: 2, label: 'M' },
-  { id: 3, label: 'M' },
-  { id: 4, label: 'J' },
-  { id: 5, label: 'V' },
-  { id: 6, label: 'S' },
-  { id: 0, label: 'D' },
-];
 
 interface Props {
   workout: any;
@@ -29,7 +18,6 @@ interface Props {
 }
 
 export default function WorkoutCard({ workout, date, count, onIncrement, onDecrement, onReset }: Props) {
-  const currentDay = getDayOfWeek(date);
   const theme = WORKOUT_COLORS[workout.color] || WORKOUT_COLORS.blue;
   const target = workout.repetitions || 1;
   const isComplete = count >= target;
@@ -49,23 +37,6 @@ export default function WorkoutCard({ workout, date, count, onIncrement, onDecre
             Objectif : {workout.repetitions} fois
           </p>
         )}
-        <div className="flex gap-1 mt-1.5">
-          {DAYS.map(day => {
-            const isWorkoutDay = workout.daysOfWeek?.includes(day.id);
-            const isToday = day.id === currentDay;
-            
-            return (
-              <div 
-                key={day.id} 
-                className={`flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold transition-all ${
-                  isWorkoutDay && isToday ? 'bg-blue-500 text-white' : isWorkoutDay ? 'bg-slate-100 text-slate-500' : 'text-slate-200'
-                }`}
-              >
-                {day.label}
-              </div>
-            );
-          })}
-        </div>
       </div>
 
       <div className="shrink-0">
